@@ -48,6 +48,9 @@ def insert_games(games, cursor):
             # Parse the date (assume date is provided in the "YYYY-MM-DD" format)
             game_date = datetime.strptime(game.get('date', '1970-01-01'), '%Y-%m-%d')  # Default if no date is provided
             
+            # Handle 'Unknown Week'
+            week = game['week'] if game['week'] != 'Unknown Week' else None  # Set to None if 'Unknown Week'
+
             cursor.execute("""
                 INSERT INTO games (season_id, home_team_id, away_team_id, home_score, away_score, date, week, round)
                 VALUES (%s, %s, %s, %s, %s, %s, %s, %s);
@@ -58,7 +61,7 @@ def insert_games(games, cursor):
                 game['home_score'],
                 game['away_score'],
                 game_date,
-                game['week'],
+                week,  # This will now be None if 'Unknown Week'
                 game['round_type']
             ))
 

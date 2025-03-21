@@ -48,8 +48,8 @@ def get_seasons():
     return df
 
 def team_info_page():
-    st.title("Team Information (2000 onwards)")
-    st.write("Select a team to view detailed stats from the year 2000 onwards.")
+    st.title("Team Information")
+    st.write("Select a team to view detailed stats.")
 
     # Get the teams data
     teams_df = get_teams()
@@ -76,7 +76,7 @@ def team_info_page():
     # Show basic team info
     st.write(f"**Team:** {selected_team['name']}")
 
-    # Get games data and filter for 2000 onwards
+    # Get games data and filter for all years
     games_df = get_games()
     
     # Check if 'season_year' exists, if not merge with seasons table
@@ -114,27 +114,34 @@ def team_info_page():
 
     # Calculate the number of playoff wins
     playoff_games = team_games[team_games['round'] == 'Playoffs']
-    playoff_wins = playoff_games.groupby('year')['win'].sum().reset_index()
 
-    # Calculate the number of Super Bowl appearances and wins
-    super_bowl_appearances = games_df[(games_df['home_team'] == team_name) | (games_df['away_team'] == team_name) & 
-                                      (games_df['round'] == 'Super Bowl')].shape[0]
-    super_bowl_wins = games_df[((games_df['home_team'] == team_name) & (games_df['home_score'] > games_df['away_score']) & 
-                                (games_df['round'] == 'Super Bowl')) | 
-                               ((games_df['away_team'] == team_name) & (games_df['away_score'] > games_df['home_score']) & 
-                                (games_df['round'] == 'Super Bowl'))].shape[0]
+    # Get Super Bowl Appearances with the years
+    super_bowl_appearances_df = games_df[(games_df['round'] == 'Super Bowl') & 
+                                         ((games_df['home_team'] == team_name) | (games_df['away_team'] == team_name))]
+    super_bowl_appearances_years = super_bowl_appearances_df['season_year'].tolist()
+    super_bowl_appearances = len(super_bowl_appearances_years)
+
+    # Get Super Bowl Wins with the years
+    super_bowl_wins_df = games_df[((games_df['home_team'] == team_name) & (games_df['home_score'] > games_df['away_score']) & 
+                                   (games_df['round'] == 'Super Bowl')) | 
+                                  ((games_df['away_team'] == team_name) & (games_df['away_score'] > games_df['home_score']) & 
+                                   (games_df['round'] == 'Super Bowl'))]
+    super_bowl_wins_years = super_bowl_wins_df['season_year'].tolist()
+    super_bowl_wins = len(super_bowl_wins_years)
 
     # Display Team Information in a white curved box
     st.markdown("""
         <div style="background-color: black; padding: 20px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
-            <h3>Team Stats (2000 - Present)</h3>
+            <h3>Team Stats (All Seasons)</h3>
             <p><strong>Games Played:</strong> {}</p>
             <p><strong>Total Wins (Regular + Playoffs):</strong> {}</p>
             <p><strong>Season with Most Regular Season Wins:</strong> {} ({}) wins</p>
-            <p><strong>Super Bowl Appearances:</strong> {} </p>
-            <p><strong>Super Bowl Wins:</strong> {} 🏆</p>
+            <p><strong>Super Bowl Appearances:</strong> {} ({})</p>
+            <p><strong>Super Bowl Wins:</strong> {} ({}) 🏆</p>
         </div>
-    """.format(total_games, total_wins, best_season['year'], best_season['win'], super_bowl_appearances, super_bowl_wins), unsafe_allow_html=True)
+    """.format(total_games, total_wins, best_season['year'], best_season['win'], 
+               super_bowl_appearances, ', '.join(map(str, super_bowl_appearances_years)), 
+               super_bowl_wins, ', '.join(map(str, super_bowl_wins_years))), unsafe_allow_html=True)
 
     # Visualizations
     st.write("### Team Performance over Time")

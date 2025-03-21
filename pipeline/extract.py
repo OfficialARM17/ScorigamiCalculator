@@ -44,18 +44,30 @@ def fetch_and_process_games(year):
             home_score = competition['competitors'][0]['score']
             away_score = competition['competitors'][1]['score']
             
-            # Round of the game
-            round_type = 'Regular Season'  # Default to 'Regular Season'
-            
+            # Round of the game (default to 'Regular Season')
+            round_type = 'Regular Season'
+
+            # Check if any notes are present for event headlines like "Super Bowl" or "Conference Championship"
+            if 'notes' in competition:
+                for note in competition['notes']:
+                    if note.get('type') == 'event' and 'headline' in note:
+                        headline = note['headline'].lower()  # Convert headline to lowercase for case-insensitive matching
+                        
+                        if 'super bowl' in headline:
+                            round_type = "Super Bowl"
+                        elif 'conference championship' in headline:
+                            round_type = "Conference Championship"
+
+            # If it's a playoff game, check for normal playoff week numbers
             if season_slug == 'post-season':
                 playoff_week = game['week']['number'] if 'week' in game and 'number' in game['week'] else None
                 
-                # Check for playoff games
-                if playoff_week == 1:
+                # Override round_type if it’s a playoff game that isn't explicitly marked by the event notes
+                if playoff_week == 1 and round_type == 'Regular Season':
                     round_type = "Wild Card Round"
-                elif playoff_week == 2:
+                elif playoff_week == 2 and round_type == 'Regular Season':
                     round_type = "Divisional Round"
-                elif playoff_week == 3:
+                elif playoff_week == 3 and round_type == 'Regular Season':
                     round_type = "Championship Round"
                 elif (year >= 2009 and playoff_week == 4):  # Pro Bowl occurs before Super Bowl after 2008
                     continue  # Skip Pro Bowl games after 2008 (week 4)
@@ -131,3 +143,9 @@ def extract_data_for_years(years):
 
     # Save all accumulated data to a single JSON file
     save_to_single_json(all_teams, all_seasons, all_games)
+
+# List of years to fetch data for (1946 to 2024)
+years = list(range(1946, 2025))
+
+# Extract data for each year and save it to a single JSON file
+extract_data_for_years(years)
