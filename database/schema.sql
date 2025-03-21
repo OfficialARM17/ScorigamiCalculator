@@ -5,13 +5,14 @@ DROP TABLE IF EXISTS games, teams, seasons;
 CREATE TABLE seasons (
     season_id SERIAL PRIMARY KEY,
     year INTEGER NOT NULL,
-    type TEXT CHECK(type IN ('regular-season', 'post-season')) NOT NULL
+    type TEXT CHECK(type IN ('regular-season', 'post-season')) NOT NULL,
+    CONSTRAINT unique_season UNIQUE (year, type)  -- Add unique constraint for year and type
 );
 
 -- Teams Table
 CREATE TABLE teams (
     team_id SERIAL PRIMARY KEY,
-    name TEXT UNIQUE NOT NULL
+    name TEXT UNIQUE NOT NULL  -- Ensure 'name' is unique
 );
 
 -- Games Table

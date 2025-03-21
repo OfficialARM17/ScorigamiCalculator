@@ -1,0 +1,1 @@
+psql -U new_user -d nfl_db -f schema.sql          

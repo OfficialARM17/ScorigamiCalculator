@@ -46,17 +46,22 @@ def fetch_and_process_games(year):
             
             # Round of the game
             round_type = 'Regular Season'  # Default to 'Regular Season'
+            
             if season_slug == 'post-season':
                 playoff_week = game['week']['number'] if 'week' in game and 'number' in game['week'] else None
+                
+                # Check for playoff games
                 if playoff_week == 1:
                     round_type = "Wild Card Round"
                 elif playoff_week == 2:
                     round_type = "Divisional Round"
                 elif playoff_week == 3:
                     round_type = "Championship Round"
-                elif playoff_week == 4:
-                    round_type = "Pro Bowl"
-                elif playoff_week == 5:
+                elif (year >= 2009 and playoff_week == 4):  # Pro Bowl occurs before Super Bowl after 2008
+                    continue  # Skip Pro Bowl games after 2008 (week 4)
+                elif (year <= 2008 and playoff_week == 5):  # Pro Bowl occurs after Super Bowl before 2008
+                    continue  # Skip Pro Bowl games before 2008 (week 5)
+                elif playoff_week == 4 or playoff_week == 5:  # This is the Super Bowl for years 2008 and after
                     round_type = "Super Bowl"
 
             # Add teams and season to respective sets
@@ -126,9 +131,3 @@ def extract_data_for_years(years):
 
     # Save all accumulated data to a single JSON file
     save_to_single_json(all_teams, all_seasons, all_games)
-
-# List of years to fetch data for (1990 to 2024)
-years = list(range(1999, 2025))
-
-# Extract data for each year and save it to a single JSON file
-extract_data_for_years(years)
